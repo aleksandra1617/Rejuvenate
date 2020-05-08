@@ -1,0 +1,32 @@
+
+__pycache__/CNN.cpython-36.pyc
+*.pyc
+*.pkl
+cnn_model_epoch10.h5
+cnn_model_epoch2_sample.h5
+Data Repository/PlantVillage/plantdisease.zip
+Protective Custody for Files/Models/CNN/CNN98 - Full Original Epoch25/Figure_2 epoch25.png
+Protective Custody for Files/Models/CNN/CNN98 - Full Original Epoch25/cnn_mode_original_epoch25.h5
+Protective Custody for Files/Models/CNN/CNN98 - Full Original Epoch25/Figure_1 epoch25d.png
+Protective Custody for Files/Models/CNN/CNN98 - Full Original Epoch25/CNN Epoch25 Output.txt
+Protective Custody for Files/Models/CNN/CNN Structure.png
+Protective Custody for Files/Models/CNN/CNN87 - Sample Original/cnn87_model_sample_original_epoch10.h5
+Protective Custody for Files/Models/CNN/CNN87 - Sample Original/CNN_Sample_Original_Epoch_10v2.txt
+Protective Custody for Files/Models/CNN/CNN87 - Sample Original/Figure_1 cnn87 Epoch 10.png
+Protective Custody for Files/Models/CNN/CNN90 - 500 Original Epoch 10/CNN Output.txt
+Protective Custody for Files/Models/CNN/CNN87 - Sample Original/Figure_2 cnn 87 Epoch 10.png
+Protective Custody for Files/Models/CNN/CNN90 - 500 Original Epoch 10/cnn_original_model_epoch10.h5
+Protective Custody for Files/Models/CNN/CNN90 - 500 Original Epoch 10/Figure_1 CNN 90 Original 500 Epoch 10 .png
+Protective Custody for Files/Models/CNN/CNN90 - 500 Original Epoch 10/Figure_2 CNN 90 Original 500 Epoch 10 .png
+Protective Custody for Files/Models/CNN/CNN90 - Sample Original/cnn90_model_sample_original_epoch10.h5
+Protective Custody for Files/Models/CNN/CNN90 - Sample Original/CNN_ Sample_Original_Epoch_10v1.txt
+Protective Custody for Files/Models/CNN/CNN90 - Sample Original/Figure_1 cnn90.png
+Protective Custody for Files/Models/CNN/CNN90 - Sample Original/Figure_2 cnn90.png
+Protective Custody for Files/Models/CNN/CNN93 - Denoised Sample/CNN Denoised Sample Epoch10 Output.txt
+Protective Custody for Files/Models/CNN/CNN93 - Denoised Sample/cnn_denoised_sample_model_epoch10.h5
+Protective Custody for Files/Models/CNN/CNN93 - Denoised Sample/Figure_1 Denoised Sample Epoch10.png
+Protective Custody for Files/Models/CNN/CNN93 - Denoised Sample/Figure_2 Denoised Sample Epoch10.png
+*.jpg
+*.png
+*.jpeg
+*.pdf

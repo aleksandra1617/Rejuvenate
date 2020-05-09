@@ -3,10 +3,12 @@ import cv2
 from keras.preprocessing.image import img_to_array
 import numpy as np
 from matplotlib import pyplot as plt
-from Utilities import time_function
+from Utilities import threadpool
 
 WIDTH, HEIGHT, DEPTH = 980, 720, 3
 DEFAULT_IMG_SIZE = tuple((WIDTH, HEIGHT))
+
+PROCESSES = 0
 
 
 def get_image_paths(dataset_path, images_paths_map):
@@ -42,8 +44,8 @@ def get_image_paths(dataset_path, images_paths_map):
 
             # if it is an image, store it and continue through the rest of the items.
             if name.endswith(".jpg") or name.endswith(".JPG") or \
-               name.endswith(".PNG") or name.endswith(".png"):
-                label = dataset_path.split("\\")[-1]    # Extract the Label from the path.
+                    name.endswith(".PNG") or name.endswith(".png"):
+                label = dataset_path.split("\\")[-1]  # Extract the Label from the path.
 
                 # If this label exists in the dictionary append the new path
                 if label in images_paths_map.keys():
@@ -51,29 +53,28 @@ def get_image_paths(dataset_path, images_paths_map):
                 else:  # Otherwise create the label, its list of paths and append.
                     images_paths_map.update({label: [new_path]})
 
-            elif '.' not in name:   # if it is a directory, spawn a recursion to keep searching.
+            elif '.' not in name:  # if it is a directory, spawn a recursion to keep searching.
                 get_image_paths(new_path, images_paths_map)
 
     except Exception as e:
         print(f"[Error] : {e}")
 
 
-# Slow Processing, takes around 1 second.
 def denoise_image(original_image):
     # Denoising original image
-    dst = cv2.fastNlMeansDenoisingColored(original_image, None, 10, 10, 7, 21)   # Source of slow processing.
+    dst = cv2.fastNlMeansDenoisingColored(original_image, None, 10, 10, 7, 21)  # Source of slow processing.
 
     # Reorder the BGR values of the denoised image to RGB so that it can be loaded correctly
-    #b, g, r = cv2.split(dst)
-    #rgb_denoised = cv2.merge([r, g, b])
+    # b, g, r = cv2.split(dst)
+    # rgb_denoised = cv2.merge([r, g, b])
 
     # Reorder the BGR values of the original image to RGB so that it can be loaded correctly
-    #b, g, r = cv2.split(original_image)
-    #rgb_original = cv2.merge([r, g, b])
+    # b, g, r = cv2.split(original_image)
+    # rgb_original = cv2.merge([r, g, b])
 
-    #plt.subplot(211), plt.imshow(rgb_original)
-    #plt.subplot(212), plt.imshow(rgb_denoised)
-    #plt.show()
+    # plt.subplot(211), plt.imshow(rgb_original)
+    # plt.subplot(212), plt.imshow(rgb_denoised)
+    # plt.show()
 
     return dst
 
@@ -100,7 +101,7 @@ def format_image(image_path):
         if image is not None:
             original_image = img_to_array(image)
 
-            denoised_image = img_to_array(denoise_image(image))                          # cv2.resize(image, image_size)
+            denoised_image = img_to_array(denoise_image(image))  # cv2.resize(image, image_size)
             return original_image, denoised_image
         else:
             print(f"[Warning] : Unable to read the image, returning empty array..")
@@ -111,8 +112,42 @@ def format_image(image_path):
         return None, None
 
 
-@time_function
+@threadpool
+def process_image(image_paths, key, original_dataset, denoised_original_dataset, sample_size, sample_sample_size, sample_dataset, denoised_sample_dataset,
+                  original_dataset_out, denoised_original_dataset_out, sample_dataset_out, denoised_sample_dataset_out):
+
+    global PROCESSES
+
+    temp_original, temp_denoised = [], []
+
+    PROCESSES += 1
+
+    for i in range(len(image_paths[key][:sample_size])):
+        path = image_paths[key][i]
+        original, denoised = format_image(path)
+        if original is not None: temp_original.append(original)
+        if denoised is not None: temp_denoised.append(denoised)
+
+        # Clone images from each category as described by sample_size to generate sample data.
+        if len(temp_original) == sample_sample_size: sample_dataset += temp_original
+        if len(temp_denoised) == sample_sample_size: denoised_sample_dataset += temp_denoised
+
+        original_dataset_out.append(key)
+        denoised_original_dataset_out.append(key)
+        if len(temp_original) <= sample_sample_size: sample_dataset_out.append(key)
+        if len(temp_original) <= sample_sample_size: denoised_sample_dataset_out.append(key)
+
+        print("[INFO] Finished Processing", i, " Images from  << ", key, " >>  category..")
+
+        # Merge the accumulated data
+    original_dataset += temp_original
+    denoised_original_dataset += temp_denoised
+    PROCESSES -= 1
+    print("[INFO] Finished Processing Images from  << ", key, " >>  category..")
+
+
 def run(sample_size, sample_sample_size, root_dir):
+    global PROCESSES
     image_paths = {}
     get_image_paths(root_dir, image_paths)
 
@@ -121,27 +156,14 @@ def run(sample_size, sample_sample_size, root_dir):
     original_dataset_out, denoised_original_dataset_out, sample_dataset_out, denoised_sample_dataset_out = [], [], [], []
 
     for key in image_paths:
-        temp_original, temp_denoised = [], []
         print("[INFO] Processing Images from  << ", key, " >>  category..")
 
-        for i in range(len(image_paths[key][:sample_size])):
-            path = image_paths[key][i]
-            original, denoised = format_image(path)
-            if original is not None: temp_original.append(original)
-            if denoised is not None: temp_denoised.append(denoised)
+        process_image(image_paths, key, original_dataset, denoised_original_dataset, sample_size, sample_sample_size,
+                      sample_dataset, denoised_sample_dataset, original_dataset_out, denoised_original_dataset_out,
+                      sample_dataset_out, denoised_sample_dataset_out)
 
-            # Clone images from each category as described by sample_size to generate sample data.
-            if len(temp_original) == sample_sample_size: sample_dataset += temp_original
-            if len(temp_denoised) == sample_sample_size: denoised_sample_dataset += temp_denoised
-
-            original_dataset_out.append(key)
-            denoised_original_dataset_out.append(key)
-            if len(temp_original) <= sample_sample_size: sample_dataset_out.append(key)
-            if len(temp_original) <= sample_sample_size: denoised_sample_dataset_out.append(key)
-
-        # Merge the accumulated data
-        original_dataset += temp_original
-        denoised_original_dataset += temp_denoised
+    while PROCESSES != 0:
+        pass
 
     original_data = [original_dataset, original_dataset_out]
     denoise_original_data = [denoised_original_dataset, denoised_original_dataset_out]
@@ -152,4 +174,4 @@ def run(sample_size, sample_sample_size, root_dir):
 
 
 if __name__ == '__main__':
-    run(10, 5, getcwd() + "\\Data Repository\\PlantVillage\\Dataset")
+    run(3, 2, getcwd() + "\\Data Repository\\PlantVillage\\Dataset")

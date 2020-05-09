@@ -2,33 +2,36 @@ import time
 import os
 from csv import reader
 import xml.etree.ElementTree as xml_tree
+import concurrent.futures
+
+_DEFAULT_POOL = concurrent.futures.ThreadPoolExecutor()
 
 
 # region LOAD SECTION
 def load_xml(path, options=""):
-	"""
-	Load the xml file into a tree-like structure.
+    """
+    Load the xml file into a tree-like structure.
 
-	Parameters
-	----------
-	(string) path: path to the file containing the data.
-	(string) options: Currently not used. Would have to pass options to the xml file as well because it is in the same
-	 				  dictionary as the csv load. Can use this options variable later to customise how to parse the file.
-	Returns
+    Parameters
+    ----------
+    (string) path: path to the file containing the data.
+    (string) options: Currently not used. Would have to pass options to the xml file as well because it is in the same
+                       dictionary as the csv load. Can use this options variable later to customise how to parse the file.
+    Returns
     -------
-	(Element Object) root: The root node of the XML Tree.
-	"""
-	return xml_tree.parse(path).getroot()
+    (Element Object) root: The root node of the XML Tree.
+    """
+    return xml_tree.parse(path).getroot()
 
 
 # Returns a file object
 def load_txt(path, options="r"):
-	return open(path, options)
+    return open(path, options)
 
 
 # This function will return the reader object
 def load_csv(path, options="r"):
-	return reader(open(path, options))
+    return reader(open(path, options))
 
 
 # region EXTRA TASKS FOR FUNCTION
@@ -44,32 +47,42 @@ def load_csv(path, options="r"):
 # TODO: Look at using the * operator to pass any number of options as one construct.
 # endregion
 def load_file(file_type, file_path, options="r"):
-	# TODO: assert that file_type is a string
+    # TODO: assert that file_type is a string
 
-	# Implemented exception handling for loading files.
-	try:
-		loaded_files = {"XML": load_xml, "TXT": load_txt, "CSV": load_csv}
-		return loaded_files[file_type.upper()](file_path, options)
+    # Implemented exception handling for loading files.
+    try:
+        loaded_files = {"XML": load_xml, "TXT": load_txt, "CSV": load_csv}
+        return loaded_files[file_type.upper()](file_path, options)
 
-	except IOError:    # The exception thrown is IOError, check if my try catch will stop it
-		print("\n"+117*"-"+"\n"\
-			  "\tNO SUCH FILE OR DIRECTORY: Current Working Directory  - ", os.getcwd(), " \n"\
-			  "\tPlease make sure your data set is stored within the 'data' directory "\
-			  "in your current working directory!"\
-			  "\n"+117*"-"+"\n")
+    except IOError:  # The exception thrown is IOError, check if my try catch will stop it
+        print("\n" + 117 * "-" + "\n" \
+                                 "\tNO SUCH FILE OR DIRECTORY: Current Working Directory  - ", os.getcwd(), " \n" \
+                                                                                                            "\tPlease make sure your data set is stored within the 'data' directory " \
+                                                                                                            "in your current working directory!" \
+                                                                                                            "\n" + 117 * "-" + "\n")
 
-		return None
+        return None
+
+
 # endregion
 
 
-# region Performance Tracking Section
+# region Performance Tracking and Improvements Section
 # Metrics to profile: Speed(Time), Calls(Frequency)
 def time_function(fun):
-	def wrapper(*pos_args, **kw_args):
-		start = time.time()
-		returned = fun(*pos_args, **kw_args)
-		print("TIMED FUNCTION: ", round(time.time() - start, 2), "seconds spent in ", fun.__name__)
-		return returned
+    def wrap(*pos_args, **kw_args):
+        start = time.time()
+        returned = fun(*pos_args, **kw_args)
+        print("TIMED FUNCTION: ", round(time.time() - start, 2), "seconds spent in ", fun.__name__)
+        return returned
 
-	return wrapper
+    return wrap
+
+
+def threadpool(f, executor=None):
+    def wrap(*args, **kwargs):
+        return (executor or _DEFAULT_POOL).submit(f, *args, **kwargs)
+
+    return wrap
+
 # endregion

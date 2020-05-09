@@ -261,7 +261,7 @@ def run(dataset, chosen_model_file_name='cnn_model_epoch25.h5'):
 
 
 if __name__ == '__main__':
-    datasets = np.array(ImageProcessing.run(3, getcwd() + "\\Data Repository\\PlantVillage\\Dataset"))
+    datasets = np.array(ImageProcessing.run(500, 1, getcwd() + "\\Data Repository\\PlantVillage\\Dataset"))
     run(datasets)
     run(load_images())
 

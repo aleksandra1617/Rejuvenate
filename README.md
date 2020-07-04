@@ -1,2 +1,2 @@
 # Rejuvenate
-Machine Learning Enabled Application for plant disease identification.
+Machine Learning Enabled Application for Plant Disease Identification.
